@@ -4,7 +4,7 @@ import ComposableArchitecture
 struct MainStore {
   
   let env: MainEnvType
-  private let pageeID = UUID().uuidString
+  private let pageID = UUID().uuidString
 }
 
 
@@ -18,7 +18,9 @@ extension MainStore: Reducer {
         return .none
         
       case .teardown:
-        return .none
+        return .merge(
+          CancelID.allCases.map { .cancel(pageID: pageID, id: $0)
+          })
       }
     }
   }
@@ -38,6 +40,6 @@ extension MainStore {
 
 extension MainStore {
   enum CancelID: Equatable, CaseIterable {
-    
+    case teardown
   }
 }

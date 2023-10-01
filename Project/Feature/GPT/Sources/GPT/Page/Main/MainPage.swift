@@ -20,5 +20,6 @@ extension MainPage: View {
       Text("Main Page")
       Spacer()
     }
+    .ignoreNavigationBar()
   }
 }
