@@ -17,7 +17,7 @@ extension CompletionUseCasePlatform: CompletionUseCase {
   public var sendMessage: (String) -> AnyPublisher<CompletionEntity.Response, CompositeErrorDomain> {
     { message in
       let requestModel = CompletionEntity.Request(
-        model: configurationRepository.model,
+        model: "gpt-3.5-turbo-instruct",
         prompt: message,
         temperature: 0.6,
         maxTokens: 2_048)

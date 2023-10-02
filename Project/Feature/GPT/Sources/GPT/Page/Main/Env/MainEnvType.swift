@@ -15,9 +15,12 @@ extension MainEnvType {
   public var sendMessage: (String) -> Effect<MainStore.Action> {
     { message in
       .publisher {
-        useCaseGroup.completionUseCase
+        useCaseGroup.streamUseCase
           .sendMessage(message)
-          .compactMap(\.choiceList.first?.text)
+          .map { res -> String in
+            print(res)
+            return res.choiceList.first?.message.content ?? ""
+          }
           .mapToResult()
           .receive(on: mainQueue)
           .map { .fetchMessage($0) }
