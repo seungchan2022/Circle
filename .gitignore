@@ -93,5 +93,6 @@ Gemfile.lock
 SourcePackages
 .package.resolved
 
-### Privagte ENV
+
+### Private ENV
 ENV.json

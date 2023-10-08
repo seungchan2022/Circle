@@ -24,22 +24,23 @@ extension MainStore: Reducer {
 
       case .teardown:
         return .merge(
-          CancelID.allCases.map { .cancel(pageID: pageID, id: $0)
-          })
+          CancelID.allCases.map { .cancel(pageID: pageID, id: $0) })
 
-      case .sendMessage:
+      case .onTapSendMessage:
         state.fetchMessage.isLoading = true
         return env.sendMessage(state.message)
           .cancellable(pageID: pageID, id: CancelID.requestSendMessage, cancelInFlight: true)
 
-      case .fetchMessage(let result):
+      case .onTapCancel:
+        state.message = ""
         state.fetchMessage.isLoading = false
+        return .cancel(pageID: pageID, id: CancelID.requestSendMessage)
 
+      case .fetchMessage(let result):
         switch result {
         case .success(let item):
-          let (newFetchMessage, newPrompt) = env.proceedNewMessage(state, item)
-          state.fetchMessage = newFetchMessage
-          state.message = newPrompt
+          state.fetchMessage = env.proceedNewMessage(state.fetchMessage.value, item)
+          state.message = ""
           return .none
 
         case .failure(let error):
@@ -70,14 +71,12 @@ extension MainStore {
     let content: String
     let isFinish: Bool
 
-    init(
-      content: String = "",
-      isFinish: Bool = true)
-    {
+    init(content: String = "", isFinish: Bool = true) {
       self.content = content
       self.isFinish = isFinish
     }
   }
+
 }
 
 // MARK: MainStore.Action
@@ -87,7 +86,9 @@ extension MainStore {
     case teardown
     case binding(BindingAction<State>)
 
-    case sendMessage
+    case onTapSendMessage
+    case onTapCancel
+
     case fetchMessage(Result<MessageScope, CompositeErrorDomain>)
     case throwError(CompositeErrorDomain)
   }
@@ -101,6 +102,3 @@ extension MainStore {
     case requestSendMessage
   }
 }
-
-
-// var와 let의 차이점을 설명하고 swift코드로 표현해줘
