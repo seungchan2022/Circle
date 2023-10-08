@@ -36,22 +36,14 @@ extension MainStore: Reducer {
         state.fetchMessage.isLoading = false
 
         switch result {
-        case .success(let message):
-          state.fetchMessage.isLoading = !message.isFinish
-          state.fetchMessage.value = state.fetchMessage.value.merge(rawValue: message)
-//          state.fetchMessage.value = state.fetchMessage.value + message
-
-          switch message.isFinish {
-          case true:
-            state.message = ""
-
-          case false:
-            break
-          }
-
+        case .success(let item):
+          let (newFetchMessage, newPrompt) = env.proceedNewMessage(state, item)
+          state.fetchMessage = newFetchMessage
+          state.message = newPrompt
           return .none
 
         case .failure(let error):
+          state.fetchMessage.isLoading = false
           return .run { await $0(.throwError(error)) }
         }
 
@@ -86,7 +78,6 @@ extension MainStore {
       self.isFinish = isFinish
     }
   }
-
 }
 
 // MARK: MainStore.Action
@@ -111,12 +102,5 @@ extension MainStore {
   }
 }
 
-extension MainStore.MessageScope {
-  func merge(rawValue: Self) -> Self {
-    .init(
-      content: content + rawValue.content,
-      isFinish: rawValue.isFinish)
-  }
-}
 
 // var와 let의 차이점을 설명하고 swift코드로 표현해줘
