@@ -21,15 +21,15 @@ extension StreamUseCasePlatform: StreamUseCase {
         messageList: [
           .init(role: "user", content: message),
         ],
-        stream: false)
+        stream: true)
 
       return Endpoint(
         baseURL: configurationRepository.apiURL,
         pathList: ["v1", "chat", "completions"],
         httpMethod: .post,
         content: .bodyItem(requestModel),
-        header: ["Authorization" : "Bearer \(token)"])
-        .fetch()
+        header: ["Authorization": "Bearer \(token)"])
+        .sse()
     }
   }
 }

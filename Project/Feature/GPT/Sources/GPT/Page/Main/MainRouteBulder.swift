@@ -2,7 +2,7 @@ import Architecture
 import Foundation
 import LinkNavigator
 
-struct MainRouteBuilder<RootNavigator: LinkNavigatorProtocol & LinkNavigatorFindLocationUsable> {
+struct MainRouteBulder<RootNavigator: LinkNavigatorProtocol & LinkNavigatorFindLocationUsable> {
   static func generate() -> RouteBuilderOf<RootNavigator> {
     let matchPath = Link.GPT.Path.main.rawValue
 

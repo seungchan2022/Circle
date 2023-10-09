@@ -17,9 +17,12 @@ extension MainEnvType {
       .publisher {
         useCaseGroup.streamUseCase
           .sendMessage(message)
-          .map { res -> String in
-            print(res)
-            return res.choiceList.first?.message.content ?? ""
+          .map { res -> MainStore.MessageScope in
+            guard let pick = res.choiceList.first else { return .init() }
+
+            return .init(
+              content: pick.delta.content ?? "" ,
+              isFinish: (pick.finishReason ?? "").lowercased() == "stop")
           }
           .mapToResult()
           .receive(on: mainQueue)

@@ -17,11 +17,10 @@ extension CompletionUseCasePlatform: CompletionUseCase {
   public var sendMessage: (String) -> AnyPublisher<CompletionEntity.Response, CompositeErrorDomain> {
     { message in
       let requestModel = CompletionEntity.Request(
-        model: "gpt-3.5-turbo-instruct",
+        model: configurationRepository.model,
         prompt: message,
-        temperature: 0.6,
+        temperature: .zero,
         maxTokens: 2_048)
-      print("AAA ", token)
 
       return Endpoint(
         baseURL: configurationRepository.apiURL,

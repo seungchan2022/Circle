@@ -17,7 +17,7 @@ extension AppSideEffect {
   static var live: Self {
     let configuration = ConfigurationRepository(
       apiURL: "https://api.openai.com",
-      model: "gpt-3.5-turbo")
+      model: "gpt-3.5-turbo-instruct")
     return self.init(
       completionUseCase: CompletionUseCasePlatform(
         configurationRepository: configuration),

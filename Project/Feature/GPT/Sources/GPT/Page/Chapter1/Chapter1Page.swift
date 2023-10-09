@@ -36,7 +36,6 @@ extension Chapter1Page: View {
       } else {
         ScrollView {
           Text(viewStore.fetchMessage.value)
-            .padding(.horizontal, 16)
         }
       }
 
@@ -58,6 +57,7 @@ extension Chapter1Page: View {
       .padding(.vertical, 20)
       .padding(.horizontal, 16)
     }
+    .padding(.horizontal, 16)
     .ignoreNavigationBar()
   }
 }

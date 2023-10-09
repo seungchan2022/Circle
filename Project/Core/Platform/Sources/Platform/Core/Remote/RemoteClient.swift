@@ -1,4 +1,5 @@
 import Combine
+import CombineExt
 import Domain
 import Foundation
 
@@ -10,12 +11,29 @@ extension Endpoint {
       .catch { Fail(error: $0.serialized()) }
       .eraseToAnyPublisher()
   }
+
+  func sse<D: Decodable>(session: URLSession = .shared) -> AnyPublisher<D, CompositeErrorDomain> {
+    makeRequest()
+      .flatMap(session.sseData)
+//      .map {
+//        print("BBB", $0.prettyPrintedJSONString)
+//        return $0
+//      }
+      .decode(type: D.self, decoder: JSONDecoder())
+      .catch { Fail(error: $0.serialized()) }
+//      .catch { error -> AnyPublisher<D, CompositeErrorDomain> in
+//        print("AAA ", error)
+//        return Fail(error: error.serialized())
+//          .eraseToAnyPublisher()
+//      }
+      .eraseToAnyPublisher()
+  }
 }
 
 extension URLSession {
   fileprivate var fetchData: (URLRequest) -> AnyPublisher<Data, CompositeErrorDomain> {
-    { request in
-      self.dataTaskPublisher(for: request)
+    {
+      self.dataTaskPublisher(for: $0)
         .tryMap { data, response in
           print(response.url?.absoluteString ?? "")
 
@@ -30,6 +48,43 @@ extension URLSession {
         }
         .catch { Fail(error: $0.serialized()) }
         .eraseToAnyPublisher()
+    }
+  }
+
+  fileprivate var sseData: (URLRequest) -> AnyPublisher<Data, CompositeErrorDomain> {
+    { request in
+      .create { observer in
+        let task = Task {
+          do {
+            let (resultList, response) = try await self.bytes(for: request)
+
+            guard let urlResponse = response as? HTTPURLResponse
+            else {
+              observer.send(completion: .failure(.invalidCasting))
+              return
+            }
+
+            guard (200...299).contains(urlResponse.statusCode)
+            else {
+              observer.send(completion: .failure(.networkError(urlResponse.statusCode)))
+              return
+            }
+
+            for try await line in resultList.lines {
+              let data = "\(line.split(separator: "data: ").last ?? "")".data(using: .utf8) ?? .init()
+              data.isValideJSON ? observer.send(data) : observer.send(completion: .finished)
+            }
+
+            observer.send(completion: .finished)
+
+          } catch {
+            print(error)
+            observer.send(completion: .failure(.other(error)))
+          }
+        }
+
+        return AnyCancellable { task.cancel() }
+      }
     }
   }
 }
@@ -52,5 +107,26 @@ extension Error {
       return CompositeErrorDomain.other(self)
     }
     return error
+  }
+}
+
+extension Data {
+  var prettyPrintedJSONString: String {
+    guard
+      let json = try? JSONSerialization.jsonObject(with: self, options: .mutableContainers),
+      let jsonData = try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+    else { return "json data malformed" }
+
+    return String(data: jsonData, encoding: .utf8) ?? "nil"
+  }
+
+  var isValideJSON: Bool {
+    do {
+      let json = try JSONSerialization.jsonObject(with: self, options: .mutableContainers),
+          _ = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+      return true
+    } catch {
+      return false
+    }
   }
 }
