@@ -16,17 +16,17 @@ extension DemoPage {
   private var markdownString: String {
    """
    ```swift
-   let api = ChatGPTAPI(apiKey: "API_KEY")
-   
+   ***let*** api = ChatGPTAPI(apiKey: "API_KEY")
+
    Task {
-       do {
-           let stream = try await api.sendMessageStream(text: "What is ChatGPT?")
-           for try await line in stream {
-               print(line)
-           }
-       } catch {
-           print(error.localizedDescription)
+     do {
+       let stream = try await api.sendMessageStream(text: "What is ChatGPT?")
+       for try await line in stream {
+         print(line)
        }
+     } catch {
+       print(error.localizedDescription)
+     }
    }
    ```
    """

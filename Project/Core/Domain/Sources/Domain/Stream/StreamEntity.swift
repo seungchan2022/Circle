@@ -17,17 +17,6 @@ extension StreamEntity {
       self.stream = stream
     }
 
-    // MARK: Public
-
-    public struct Message: Codable, Equatable {
-      public let role: String
-      public let content: String
-
-      public init(role: String, content: String) {
-        self.role = role
-        self.content = content
-      }
-    }
 
     public let model: String
     public let messageList: [Message]
@@ -41,6 +30,17 @@ extension StreamEntity {
       case stream
     }
 
+    // MARK: Public
+
+    public struct Message: Codable, Equatable {
+      public let role: String
+      public let content: String  // 내가 질문한 것
+
+      public init(role: String, content: String) {
+        self.role = role
+        self.content = content
+      }
+    }
   }
 }
 
@@ -50,6 +50,11 @@ extension StreamEntity {
   public struct Response: Codable, Equatable {
 
     // MARK: Public
+    public let id: String
+    public let object: String
+    public let created: Int
+    public let model: String
+    public let choiceList: [Choice]
 
     public struct Choice: Codable, Equatable {
       public let delta: Delta
@@ -66,12 +71,6 @@ extension StreamEntity {
       public let content: String?
     }
 
-    public let id: String
-    public let object: String
-    public let created: Int
-    public let model: String
-    public let choiceList: [Choice]
-
     // MARK: Private
 
     private enum CodingKeys: String, CodingKey {
@@ -81,6 +80,5 @@ extension StreamEntity {
       case model
       case choiceList = "choices"
     }
-
   }
 }

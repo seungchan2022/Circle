@@ -62,6 +62,7 @@ extension URLSession {
               }
               
               for try await line in resultList.lines {
+                print("BBB", line )
                 let data = "\(line.split(separator: "data: ").last ?? "")".data(using: .utf8) ?? .init()
                 data.isValideJSON ? observer.send(data) : observer.send(completion: .finished)
               }

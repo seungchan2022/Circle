@@ -74,7 +74,6 @@ extension MainPage: View {
         }
         .disabled(isLoading)
         .padding(.horizontal, 16)
-        .padding(.vertical, 16)
         .border(Color.blue)
         .frame(maxHeight: 120)
         
