@@ -22,7 +22,7 @@ extension StreamUseCasePlatform: StreamUseCase {
           .init(role: "user", content: message),
         ],
         stream: true)
-      print("AAA", requestModel.messageList.first ?? "")
+//      print("AAA", requestModel.messageList.first ?? "")
 
       return Endpoint(
         baseURL: configurationRepository.apiURL,

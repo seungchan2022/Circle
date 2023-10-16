@@ -12,7 +12,7 @@ struct AppMain: App {
     WindowGroup {
       LinkNavigationView(
         linkNavigator: viewModel.linkNavigator,
-        item: .init(path: Link.GPT.Path.chapter1.rawValue, items: ""))
+        item: .init(path: Link.GPT.Path.main.rawValue, items: ""))
         .ignoresSafeArea()
     }
   }

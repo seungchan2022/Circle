@@ -1,8 +1,9 @@
-import SwiftUI
 import Markdown
+import SwiftUI
 
+// MARK: - CodeBlockView
 
-struct CodeBlockView{
+struct CodeBlockView {
   let parserResult: ParserResult
   @State var isCopied = false
 }
@@ -13,11 +14,12 @@ extension CodeBlockView {
   }
 }
 
+// MARK: View
+
 extension CodeBlockView: View {
-  
+
   var body: some View {
     VStack(alignment: .leading) {
-      
       HStack {
         // header
         if let codeBlockLanguage = parserResult.codeBlockLanguage {
@@ -25,7 +27,7 @@ extension CodeBlockView: View {
             .font(.headline.monospaced())
             .foregroundStyle(.white)
         }
-        
+
         Spacer()
         // button
         if isCopied {
@@ -56,7 +58,7 @@ extension CodeBlockView: View {
           .foregroundColor(.white)
         }
       }
-      
+
       // 코드
       ScrollView(.horizontal, showsIndicators: true) {
         Text(parserResult.attributedString)
@@ -68,5 +70,3 @@ extension CodeBlockView: View {
     .cornerRadius(8)
   }
 }
-
-
