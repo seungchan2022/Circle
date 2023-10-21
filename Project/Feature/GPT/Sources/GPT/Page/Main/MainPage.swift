@@ -5,25 +5,34 @@ import SwiftUI
 // MARK: - MainPage
 
 struct MainPage {
-
+  
   init(store: StoreOf<MainStore>) {
     self.store = store
     viewStore = ViewStore(store, observe: { $0 })
   }
-
+  
   let store: StoreOf<MainStore>
   @ObservedObject private var viewStore: ViewStoreOf<MainStore>
   @Namespace private var lastMessage
+  @State private var selectedModel = 0
 }
 
 extension MainPage {
   private var isLoading: Bool {
     viewStore.fetchMessage.isLoading
   }
-
+  
   private var chatList: [MainStore.MessageScope] {
-//    print(viewStore.chatList)
     viewStore.chatList
+  }
+  
+  private func showNewChat() {
+  }
+  
+  private func showHistory() {
+  }
+  
+  private func showSetting() {
   }
 }
 
@@ -32,59 +41,106 @@ extension MainPage {
 extension MainPage: View {
   var body: some View {
     VStack {
-      Spacer()
-
-      Text("GPT에게 말해봐요")
-
+      HStack {
+        
+        Picker("GPT Model", selection: $selectedModel) {
+          Text("GPT-3.5")
+            .tag(0)
+          Text("GPT-4")
+            .tag(1)
+        }
+        
+        .frame(height: 60)
+        .pickerStyle(SegmentedPickerStyle())
+        
+        Menu {
+          ControlGroup {
+            Button(action: { showNewChat() }) {
+              VStack {
+                Image(systemName: "plus")
+                Text("New Chat")
+              }
+            }
+            
+            Button(action: { showHistory() }) {
+              VStack {
+                Image(systemName: "clock")
+                Text("History")
+              }
+            }
+            
+            Button(action: { showSetting() }) {
+              VStack {
+                Image(systemName: "gearshape.fill")
+                Text("Settings")
+              }
+            }
+          }
+          
+        } label: {
+          Button(action: { }) {
+            Image(systemName: "ellipsis")
+              .renderingMode(.template)
+              .foregroundColor(.gray)
+          }
+          .frame(width: 50, height: 50)
+          .background(
+            RoundedRectangle(cornerRadius: 10)
+              .fill(Color.gray.opacity(0.5)))
+        }
+        
+      }
+      
+      
       //      ScrollViewReader { proxy in
-      ScrollView {
-        LazyVStack {
-          ForEach(chatList, id: \.id) { item in
-            ChatItemComponent(viewState: .init(item: item))
+      if selectedModel == 0 {
+        
+        ScrollView {
+          LazyVStack {
+            ForEach(chatList, id: \.id) { item in
+              ChatItemComponent(viewState: .init(item: item))
+            }
+          }
+          //        }
+          //        .onChange(of: chatList) { _, _ in
+          //          proxy.scrollTo(lastMessage, anchor: .bottom)
+          //        }
+        }
+      }
+      
+      Spacer()
+      
+      HStack(spacing: 8) {
+        Group {
+          TextField(
+            "",
+            text: viewStore.$message,
+            prompt: Text("Message").foregroundColor(.gray.opacity(0.3)),
+            axis: .vertical)
+          .lineLimit(1...3)
+          .onSubmit {
+            viewStore.send(.onTapSendMessage)
           }
         }
-      }
-      //        .onChange(of: message) { _, _ in
-      //          proxy.scrollTo(lastMessage, anchor: .bottom)
-      //        }
-      //      }
-
-      Spacer()
-
-      HStack(alignment: .top, spacing: 8) {
-        Group {
-          TextField("", text: viewStore.$message, prompt: Text("여기에 입력하세요"), axis: .vertical)
-            .frame(minHeight: 50)
-            .lineLimit(3...5)
-            .onSubmit {
-              viewStore.send(.onTapSendMessage)
-            }
-        }
-        .padding(16)
-        .border(.blue, width: 1)
-
+        .padding(.horizontal, 16)
+        .padding(.vertical, 4)
+        .background(
+          RoundedRectangle(cornerRadius: 20)
+            .stroke(Color.gray, lineWidth: 1)
+        )
+        
+        
         Button(action: { viewStore.send(.onTapSendMessage) }) {
-          Text("전송")
-            .padding(8)
+          Image(systemName: "arrow.up.circle.fill")
+            .renderingMode(.template)
+            .resizable()
+            .frame(width: 30, height: 30)
+            .foregroundColor(!viewStore.message.isEmpty ? Color.purple : Color.purple.opacity(0.3))
         }
-        .padding(8)
-        .border(.blue, width: 1)
+        .disabled(viewStore.message.isEmpty)
       }
+      .padding(.vertical, 8)
       .disabled(isLoading)
-      .frame(maxHeight: 120)
-
-      //      switch isLoading {
-      //      case true:
-      //        HStack {
-      //          Text("출력중.....")
-      //          Button(action: { viewStore.send(.onTapCancel)}) {
-      //            Text("중단")
-      //          }
-      //        }
-      //
-      //      case false:
-      //
-      //      }
     }
     .padding(.horizontal, 16)
     .ignoreNavigationBar()
@@ -95,7 +151,7 @@ extension MainPage: View {
 
 extension MainPage {
   struct ChatItemComponent {
-    let viewState: ViewState
+    var viewState: ViewState
   }
 }
 
@@ -106,16 +162,56 @@ extension MainPage.ChatItemComponent: View {
     VStack {
       switch viewState.item.role {
       case .user:
-        HStack {
+        HStack(alignment: .top) {
           Spacer()
           Text(viewState.item.content)
+          
+            .foregroundColor(.black)
+            .padding()
+            .background(
+              UnevenRoundedRectangle(
+                cornerRadii: .init(
+                  topLeading: 20.0,
+                  bottomLeading: 20.0,
+                  bottomTrailing: 20.0,
+                  topTrailing: .zero),
+                style: .continuous)
+            )
+          
+          Image(systemName: "person.crop.circle.badge.questionmark.fill")
+            .renderingMode(.template)
+            .resizable()
+            .frame(width: 30, height: 30)
+          
         }
+        .foregroundStyle(viewState.item.isFinish ? Color.yellow.opacity(0.3) : Color.gray)
+        
+        
       case .ai:
-        HStack {
+        HStack(alignment: .top) {
+          Image(systemName: "headphones.circle.fill")
+            .renderingMode(.template)
+            .resizable()
+            .frame(width: 30, height: 30)
+          
           Text(viewState.item.content)
+            .foregroundColor(.black)
+            .padding()
+            .background(
+              UnevenRoundedRectangle(
+                cornerRadii: .init(
+                  topLeading: 20.0,
+                  bottomLeading: 20.0,
+                  bottomTrailing: 20.0,
+                  topTrailing: .zero),
+                style: .continuous)
+            )
+          
           Spacer()
         }
-
+        .foregroundStyle(viewState.item.isFinish ? Color.green.opacity(0.3) : Color.gray)
+        
+        
         if !viewState.item.isFinish {
           ProgressView()
             .progressViewStyle(CircularProgressViewStyle())

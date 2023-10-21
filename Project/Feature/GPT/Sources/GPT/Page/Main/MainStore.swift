@@ -76,7 +76,8 @@ extension MainStore {
     let role: Role
     let content: String
     let isFinish: Bool
-
+    
+    
     var id: String {
       [role.rawValue + messageID].joined(separator: "_")
     }
@@ -93,7 +94,6 @@ extension MainStore {
     case user
     case ai
   }
-
 }
 
 // MARK: MainStore.Action
